@@ -1,415 +1,223 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="assets/logo_icon.png"><title>Dr. Tricho AI – TrichoAI Chatbot</title>
+    <link rel="icon" type="image/png" href="assets/logo_icon.png">
+    <title>Dr. Tricho AI – TrichoAI Chatbot</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #2F80ED;
+            --primary-dark: #1E5BB3;
+            --primary-light: #EBF3FF;
+            --green: #27AE60;
+            --text: #1F2937;
+            --text-muted: #6B7280;
+            --text-light: #9CA3AF;
+            --border: #E5E7EB;
+            --bg-light: #F8FAFC;
+            --bg-section: #FFFFFF;
+            --radius: 20px;
+            --radius-sm: 12px;
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-premium: 0 8px 24px rgba(47, 128, 237, 0.12);
+            --glass: rgba(255, 255, 255, 0.7);
+        }
+
         body {
-            background: var(--bg-light);
+            background: linear-gradient(135deg, #F0F4F8 0%, #E2E8F0 100%);
             display: flex;
             flex-direction: column;
             height: 100vh;
             overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
         }
 
         .chat-container {
             display: flex;
             flex-direction: column;
             flex: 1;
-            max-width: 860px;
+            max-width: 920px;
             width: 100%;
             margin: 0 auto;
-            padding: 1.2rem 1.5rem 0;
-            height: calc(100vh - 72px);
+            padding: 1.5rem 2rem 0;
+            height: calc(100vh - 80px);
         }
 
         .chat-header-bar {
-            background: white;
-            border: 1px solid var(--border);
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
             border-radius: var(--radius) var(--radius) 0 0;
-            padding: 1rem 1.5rem;
+            padding: 1.25rem 2rem;
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 1.2rem;
             box-shadow: var(--shadow-sm);
+            z-index: 10;
         }
 
         .bot-avatar {
-            width: 46px;
-            height: 46px;
+            width: 52px;
+            height: 52px;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px rgba(47, 128, 237, 0.2);
             border-radius: 50%;
             background: linear-gradient(135deg, var(--primary), var(--green));
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.3rem;
             flex-shrink: 0;
             position: relative;
         }
 
         .bot-online {
-            width: 11px;
-            height: 11px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
             background: var(--green);
             border: 2px solid white;
             position: absolute;
-            bottom: 1px;
-            right: 1px;
+            bottom: 2px;
+            right: 2px;
         }
 
         .chat-body {
             flex: 1;
             overflow-y: auto;
-            background: var(--bg-section);
-            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(8px);
+            padding: 2rem;
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 1.25rem;
+            border-left: 1px solid rgba(255, 255, 255, 0.3);
+            border-right: 1px solid rgba(255, 255, 255, 0.3);
             scrollbar-width: thin;
             scrollbar-color: var(--border) transparent;
         }
 
-        .msg-row {
-            display: flex;
-            gap: 0.75rem;
-        }
-
-        .msg-row.user {
-            flex-direction: row-reverse;
-        }
-
-        .msg-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.85rem;
-            flex-shrink: 0;
-        }
-
-        .msg-avatar.bot-av {
-            background: linear-gradient(135deg, var(--primary), var(--green));
-            color: white;
-        }
-
-        .msg-avatar.user-av {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            font-weight: 700;
-        }
-
         .bubble {
-            max-width: 80%;
-            padding: 1rem 1.25rem;
-            border-radius: 14px;
+            max-width: 85%;
+            padding: 1.25rem 1.5rem;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s ease;
+            border-radius: 18px;
             line-height: 1.65;
-            font-size: 0.93rem;
-            animation: slideUp 0.25s ease;
+            font-size: 0.95rem;
+        }
+
+        .bubble:hover {
+            transform: translateY(-2px);
         }
 
         .bubble.bot {
-            background: white;
-            border: 1px solid var(--border);
+            background: var(--glass);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
             border-bottom-left-radius: 4px;
             color: var(--text);
         }
 
         .bubble.user {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
+            box-shadow: 0 6px 16px rgba(47, 128, 237, 0.25);
             border-bottom-right-radius: 4px;
-        }
-
-        /* Markdown rendering inside bot bubble */
-        .bubble.bot h4 {
-            color: var(--primary);
-            font-size: 0.92rem;
-            margin: 0.75rem 0 0.3rem;
-            border-bottom: 1px solid var(--primary-light);
-            padding-bottom: 0.2rem;
-        }
-
-        .bubble.bot h4:first-child {
-            margin-top: 0;
-        }
-
-        .bubble.bot strong {
-            color: var(--text);
-        }
-
-        .bubble.bot em {
-            color: var(--text-muted);
-            font-size: 0.82rem;
-        }
-
-        .bubble.bot p {
-            color: var(--text);
-            margin-bottom: 0.4rem;
-        }
-
-        .bubble.bot ul,
-        .bubble.bot ol {
-            padding-left: 1.3rem;
-            margin: 0.3rem 0;
-        }
-
-        .bubble.bot li {
-            margin: 0.2rem 0;
-        }
-
-        .bubble.bot hr {
-            border: none;
-            border-top: 1px solid var(--border);
-            margin: 0.75rem 0;
-        }
-
-        .bubble.bot blockquote {
-            border-left: 3px solid var(--primary);
-            padding-left: 0.75rem;
-            color: var(--text-muted);
-            font-size: 0.87rem;
-            margin: 0.5rem 0;
-        }
-
-        /* Tables in bot bubble */
-        .bubble.bot table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.82rem;
-            margin: 0.75rem 0;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .bubble.bot th {
-            background: var(--primary);
             color: white;
-            padding: 0.5rem 0.75rem;
-            text-align: left;
-            font-weight: 600;
         }
 
-        .bubble.bot td {
-            padding: 0.45rem 0.75rem;
-            border-bottom: 1px solid var(--border);
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .bubble.bot tr:nth-child(even) td {
-            background: var(--bg-light);
-        }
-
-        .bubble.bot tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* Image in chat */
-        .chat-img {
-            max-width: 220px;
-            border-radius: 10px;
-            margin-bottom: 0.5rem;
-            display: block;
-        }
-
-        /* Suggestion chips */
-        .suggestion-chips {
+        .msg-row {
             display: flex;
-            flex-wrap: wrap;
-            gap: 0.45rem;
-            margin-top: 0.9rem;
+            gap: 1rem;
+            animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        .chip {
-            padding: 0.35rem 0.9rem;
+        .msg-row.user {
+            flex-direction: row-reverse;
+        }
+
+        .chat-footer {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-top: none;
+            border-radius: 0 0 var(--radius) var(--radius);
+            padding: 1.25rem 1.75rem 1.75rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+        }
+
+        .chat-input {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            padding: 1rem 1.5rem;
             border-radius: 50px;
-            border: 1.5px solid var(--primary-light);
-            background: white;
-            font-size: 0.78rem;
-            font-weight: 500;
-            color: var(--primary);
-            cursor: pointer;
+            font-size: 1rem;
+            flex: 1;
+            outline: none;
             transition: all 0.2s;
         }
 
-        .chip:hover {
-            background: var(--primary);
-            color: white;
+        .chat-input:focus {
+            box-shadow: 0 0 0 4px rgba(47, 128, 237, 0.1);
+            background: white;
             border-color: var(--primary);
         }
 
-        /* Typing indicator */
+        .suggestion-chips .chip {
+            background: white;
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .suggestion-chips .chip:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(47, 128, 237, 0.15);
+            background: var(--primary);
+            color: white;
+        }
+
+        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+        @keyframes bounce { 0%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-8px); } }
+
         .typing-dots {
             display: flex;
-            gap: 4px;
-            padding: 0.35rem 0;
+            gap: 5px;
+            padding: 5px 0;
         }
 
         .typing-dots span {
-            width: 7px;
-            height: 7px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             background: var(--primary);
             animation: bounce 1.2s infinite;
         }
 
-        .typing-dots span:nth-child(2) {
-            animation-delay: 0.2s;
-        }
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
 
-        .typing-dots span:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        @keyframes bounce {
-
-            0%,
-            80%,
-            100% {
-                transform: translateY(0)
-            }
-
-            40% {
-                transform: translateY(-6px)
-            }
-        }
-
-        /* Footer */
-        .chat-footer {
-            background: white;
-            border: 1px solid var(--border);
-            border-top: none;
-            border-radius: 0 0 var(--radius) var(--radius);
-            padding: 0.75rem 1.25rem 1.25rem;
-            margin-bottom: 1.25rem;
-        }
-
-        /* Image preview */
-        .img-preview-wrap {
-            display: none;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.6rem 0.75rem;
-            background: var(--bg-section);
-            border-radius: var(--radius-sm);
-            margin-bottom: 0.5rem;
-            border: 1px solid var(--border);
-        }
-
-        .img-preview-wrap.show {
-            display: flex;
-        }
-
-        .img-preview-thumb {
-            width: 48px;
-            height: 48px;
-            border-radius: 6px;
-            object-fit: cover;
-        }
-
-        .img-preview-label {
-            font-size: 0.83rem;
-            color: var(--text-muted);
-            flex: 1;
-        }
-
-        .img-preview-remove {
-            cursor: pointer;
-            color: #E74C3C;
-            font-size: 1.1rem;
-            padding: 0.1rem 0.25rem;
-            border-radius: 50%;
-            transition: background 0.2s;
-        }
-
-        .img-preview-remove:hover {
-            background: #FDEDEC;
-        }
-
-        /* Input row */
-        .input-row {
-            display: flex;
-            gap: 0.6rem;
-            align-items: center;
-        }
-
-        .chat-input {
-            flex: 1;
-            padding: 0.8rem 1.1rem;
-            border-radius: 50px;
-            border: 1.5px solid var(--border);
-            font-size: 0.95rem;
-            color: var(--text);
-            outline: none;
-            background: var(--bg-light);
-            font-family: inherit;
-            transition: border 0.2s;
-        }
-
-        .chat-input:focus {
-            border-color: var(--primary);
-            background: white;
-        }
-
-        .icon-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 1.5px solid var(--border);
-            background: white;
-            color: var(--text-muted);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-            transition: all 0.2s;
-            flex-shrink: 0;
-        }
-
-        .icon-btn:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-            background: var(--primary-light);
-        }
-
-        .send-btn {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-            transition: all 0.2s;
-            flex-shrink: 0;
-        }
-
-        .send-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 4px 12px rgba(47, 128, 237, 0.35);
-        }
-
-        .send-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .hint-text {
-            font-size: 0.74rem;
-            color: var(--text-light);
-            text-align: center;
-            margin-top: 0.5rem;
+        .chat-img {
+            max-width: 100%;
+            border-radius: 12px;
+            margin-bottom: 0.8rem;
         }
     </style>
 </head>
@@ -430,33 +238,30 @@
             <div class="bot-avatar">🧬<div class="bot-online"></div>
             </div>
             <div style="flex:1;">
-                <div style="font-weight:700; font-size:1.05rem;">Dr. Tricho AI</div>
-                <div style="font-size:0.78rem; color:var(--green); font-weight:500;">● Online — Clinical Trichologist &
-                    Hair Health AI</div>
+                <div style="font-weight:800; font-size:1.15rem; letter-spacing:-0.02em;">Dr. Tricho <span style="font-weight:400; color:var(--text-muted); font-size:0.9rem;">Elite Expert</span></div>
+                <div style="font-size:0.8rem; color:var(--green); font-weight:600; display:flex; align-items:center; gap:0.4rem;">
+                    <span style="display:inline-block; width:8px; height:8px; background:var(--green); border-radius:50%; animation: pulse 2s infinite;"></span>
+                    Online — Clinical Trichology & Research Lead
+                </div>
             </div>
-            <div style="font-size:0.78rem; color:var(--text-muted); text-align:right;">
-                Trained on clinical research<br>PRP · JAK · FUE · Nutrition
+            <div style="font-size:0.75rem; color:var(--text-muted); text-align:right; font-weight:500; opacity:0.8;">
+                Elite Clinical Engine v2.0<br>PRP · JAK · FUE · Bio-Nutrition
             </div>
         </div>
 
         <!-- Chat Body -->
         <div class="chat-body" id="chat-body">
             <div class="msg-row">
-                <div class="msg-avatar bot-av">🧬</div>
+                <div class="msg-avatar bot-av" style="width:35px; height:35px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--green)); color:white; display:flex; align-items:center; justify-content:center;">🧬</div>
                 <div class="bubble bot">
-                    <p>Hello! 👋 I'm <strong>Dr. Tricho</strong>, your AI-powered Hair & Scalp Health Consultant —
-                        trained on advanced clinical trichology, pharmacotherapy, and regenerative medicine.</p>
-                    <p style="margin-top:0.4rem;">I can analyse your questions and uploaded hair images with clinical
-                        precision.</p>
-                    <div class="suggestion-chips">
-                        <div class="chip" onclick="sendChip(this)">💇 Types of Hair Loss</div>
-                        <div class="chip" onclick="sendChip(this)">💊 Minoxidil vs Finasteride</div>
-                        <div class="chip" onclick="sendChip(this)">🥗 Ferritin & Hair Loss</div>
-                        <div class="chip" onclick="sendChip(this)">🔬 PRP vs Exosome Therapy</div>
-                        <div class="chip" onclick="sendChip(this)">🏥 FUE vs DHI Transplant</div>
-                        <div class="chip" onclick="sendChip(this)">❄️ Dandruff Treatment</div>
-                        <div class="chip" onclick="sendChip(this)">🧘 Scalp Massage Protocol</div>
-                        <div class="chip" onclick="sendChip(this)">💆 Alopecia Areata</div>
+                    <p>Welcome to <strong>TrichoAI Elite</strong>. I'm <strong>Dr. Tricho</strong>, your clinical research lead.</p>
+                    <p style="margin-top:0.6rem;">I am prepared to provide a sophisticated, evidence-based assessment of your hair and scalp health using the latest advancements in regenerative medicine and pharmacotherapy.</p>
+                    <div class="suggestion-chips" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:1rem;">
+                        <div class="chip" onclick="sendChip(this)">🔬 Compare PRP vs Exosome Therapy</div>
+                        <div class="chip" onclick="sendChip(this)">💊 Low-dose Oral Minoxidil vs Topical</div>
+                        <div class="chip" onclick="sendChip(this)">📊 Norwood-Hamilton Classification</div>
+                        <div class="chip" onclick="sendChip(this)">🥗 Ferritin Thresholds for Anagen</div>
+                        <div class="chip" onclick="sendChip(this)">🏥 FUE vs DHI Precision Restoration</div>
                     </div>
                 </div>
             </div>
@@ -464,33 +269,27 @@
 
         <!-- Footer -->
         <div class="chat-footer">
-            <!-- Image preview strip -->
-            <div class="img-preview-wrap" id="img-preview-wrap">
-                <img id="img-thumb" class="img-preview-thumb" src="" alt="preview">
-                <span class="img-preview-label">📎 Image attached — Dr. Tricho will analyse this photo</span>
-                <span class="img-preview-remove" onclick="removeImage()" title="Remove image">✕</span>
+            <div class="img-preview-wrap" id="img-preview-wrap" style="display:none; align-items:center; gap:1rem; padding:0.8rem; background:rgba(0,0,0,0.03); border-radius:12px; margin-bottom:1rem;">
+                <img id="img-thumb" class="img-preview-thumb" src="" alt="preview" style="width:50px; height:50px; border-radius:8px; object-fit:cover;">
+                <span class="img-preview-label" style="font-size:0.9rem; color:var(--text-muted); flex:1;">📎 Analysis Ready — Dr. Tricho will perform a clinical scan</span>
+                <span class="img-preview-remove" onclick="removeImage()" title="Remove image" style="cursor:pointer; color:red;">✕</span>
             </div>
 
-            <!-- Input row -->
-            <div class="input-row">
-                <!-- Hidden file input -->
-                <input type="file" id="img-file-input" accept="image/*" style="display:none;"
-                    onchange="handleImageSelect(this)">
-                <button class="icon-btn" title="Upload hair/scalp image for analysis"
-                    onclick="document.getElementById('img-file-input').click()">📎</button>
-                <input type="text" class="chat-input" id="chat-input"
-                    placeholder="Ask Dr. Tricho about hair loss, dandruff, treatments..." autocomplete="off">
-                <button class="send-btn" id="send-btn" onclick="sendMessage()">↑</button>
+            <div class="input-row" style="display:flex; gap:0.8rem; align-items:center;">
+                <input type="file" id="img-file-input" accept="image/*" style="display:none;" onchange="handleImageSelect(this)">
+                <button class="icon-btn" title="Upload hair/scalp image for analysis" onclick="document.getElementById('img-file-input').click()" style="width:45px; height:45px; border-radius:50%; border:1px solid var(--border); background:white; cursor:pointer;">📎</button>
+                <input type="text" class="chat-input" id="chat-input" placeholder="Inquire about clinical treatments, nutrition, or diagnostics..." autocomplete="off">
+                <button class="send-btn" id="send-btn" onclick="sendMessage()" style="width:45px; height:45px; border-radius:50%; background:var(--primary); color:white; border:none; cursor:pointer; font-size:1.2rem;">↑</button>
             </div>
-            <p class="hint-text">Dr. Tricho AI provides evidence-based education only. Always consult a qualified
-                dermatologist for medical diagnosis and treatment.</p>
+            <p class="hint-text" style="font-size:0.75rem; color:var(--text-light); text-align:center; margin-top:0.8rem;">Professional Clinical Guidance Only. Not a substitute for a physical dermatological examination.</p>
         </div>
     </div>
 
     <script>
         const chatBody = document.getElementById('chat-body');
         const chatInput = document.getElementById('chat-input');
-        let pendingImage = null; // base64 data URL
+        let pendingImage = null;
+        let chatHistory = []; 
 
         chatInput.addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey) sendMessage(); });
 
@@ -506,15 +305,15 @@
             reader.onload = (e) => {
                 pendingImage = e.target.result;
                 document.getElementById('img-thumb').src = pendingImage;
-                document.getElementById('img-preview-wrap').classList.add('show');
+                document.getElementById('img-preview-wrap').style.display = 'flex';
             };
             reader.readAsDataURL(file);
-            input.value = ''; // reset so same file can be re-selected
+            input.value = '';
         }
 
         function removeImage() {
             pendingImage = null;
-            document.getElementById('img-preview-wrap').classList.remove('show');
+            document.getElementById('img-preview-wrap').style.display = 'none';
             document.getElementById('img-thumb').src = '';
         }
 
@@ -522,9 +321,8 @@
             const text = chatInput.value.trim();
             if (!text && !pendingImage) return;
 
-            const messageText = text || 'Please analyse this hair/scalp image and provide a detailed clinical assessment.';
-
-            // Render user message
+            const messageText = text || 'Please perform a clinical analysis of this image.';
+            
             appendUserMessage(messageText, pendingImage);
             chatInput.value = '';
             const imageToSend = pendingImage;
@@ -534,36 +332,59 @@
             const typingId = showTyping();
 
             try {
-                const payload = { message: messageText };
+                const payload = { 
+                    message: messageText,
+                    history: chatHistory 
+                };
                 if (imageToSend) payload.image = imageToSend;
 
-                const res = await fetch('http://127.0.0.1:9000/api/chat', {
+                const res = await fetch('http://127.0.0.1:8000/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
+                
+                if (!res.ok) throw new Error('Backend Unreachable');
+                
                 const data = await res.json();
                 removeTyping(typingId);
                 appendBotMessage(data.response);
+                
+                chatHistory.push({ role: "user", parts: [messageText] });
+                chatHistory.push({ role: "model", parts: [data.response] });
+                if(chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
+
             } catch (e) {
                 removeTyping(typingId);
-                appendBotMessage(getLocalResponse(messageText));
+                const errorResponse = getPremiumErrorResponse(e.message);
+                appendBotMessage(errorResponse);
             } finally {
                 document.getElementById('send-btn').disabled = false;
             }
         }
 
+        function getPremiumErrorResponse(err) {
+            return `**⚠️ Elite Clinical Engine Connectivity Notice**
+
+I apologize, but I am currently unable to establish a secure link with the TrichoAI research backend. 
+
+**Diagnostic Resolution Steps:**
+1. Ensure the **TrichoAI Backend** is active on port **8000**.
+2. Run the initialization command: \`cd TrichoAI && .\\venv\\Scripts\\python -m uvicorn backend.main:app --port 8000\`
+3. Verify your local network environment.
+
+*I am standing by to provide a full clinical assessment once the connection is restored.*`;
+        }
+
         function appendUserMessage(text, imageUrl) {
-            const session = JSON.parse(localStorage.getItem('tricho_session') || '{}');
-            const initials = (session.name || 'U')[0].toUpperCase();
             const row = document.createElement('div');
             row.className = 'msg-row user';
             row.innerHTML = `
-        <div class="msg-avatar user-av">${escHtml(initials)}</div>
-        <div class="bubble user">
-            ${imageUrl ? `<img src="${imageUrl}" class="chat-img" alt="Uploaded hair image">` : ''}
-            ${text ? `<p style="color:white;">${escHtml(text)}</p>` : ''}
-        </div>`;
+                <div class="msg-avatar user-av" style="width:35px; height:35px; border-radius:50%; background:var(--primary-dark); color:white; display:flex; align-items:center; justify-content:center; font-weight:700;">U</div>
+                <div class="bubble user">
+                    ${imageUrl ? `<img src="${imageUrl}" class="chat-img" alt="Clinical Sample">` : ''}
+                    ${text ? `<p style="color:white; font-weight:500; margin:0;">${escHtml(text)}</p>` : ''}
+                </div>`;
             chatBody.appendChild(row);
             scrollToBottom();
         }
@@ -571,26 +392,45 @@
         function appendBotMessage(text) {
             const row = document.createElement('div');
             row.className = 'msg-row';
-            row.innerHTML = `<div class="msg-avatar bot-av">🧬</div><div class="bubble bot">${formatMd(text)}</div>`;
+            const bubbleId = 'bot-' + Date.now();
+            row.innerHTML = `
+                <div class="msg-avatar bot-av" style="width:35px; height:35px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--green)); color:white; display:flex; align-items:center; justify-content:center;">🧬</div>
+                <div class="bubble bot" id="${bubbleId}"></div>`;
             chatBody.appendChild(row);
+            
+            const bubble = document.getElementById(bubbleId);
+            typeText(bubble, text);
+        }
+
+        async function typeText(element, text) {
+            // This function simulates a "Live" typing effect
+            // We'll reveal chunks to make it feel natural and fast enough
+            const html = formatMd(text);
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            
+            // To handle HTML correctly while typing, we reveal by nodes or small chunks
+            // For simplicity and "Advanced Live" feel, we'll use a fast character-based reveal for text
+            // but inject the whole structure gradually.
+            
+            // Actually, a simpler "Advanced" way is to use a visibility transition 
+            // but let's do a fast word-by-word reveal for that "Live" vibe.
+            const words = text.split(' ');
+            let currentText = '';
+            
+            for (let i = 0; i < words.length; i++) {
+                currentText += words[i] + ' ';
+                element.innerHTML = formatMd(currentText.trim());
+                scrollToBottom();
+                await new Promise(r => setTimeout(r, 15 + Math.random() * 25)); // Randomized speed for human feel
+            }
+            // Final set to ensure everything is perfect
+            element.innerHTML = html;
             scrollToBottom();
         }
 
-        /**
-         * Converts our markdown-like text to HTML.
-         * Handles: **bold**, *italic*, headers (#), tables (|), lists (•/-), hr (---), blockquotes (>)
-         */
         function formatMd(text) {
-            let html = text
-                // Escape HTML entities first
-                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-                // Restore > for blockquotes after escaping
-                // We'll parse line by line instead
-                ;
-
-            // Process tables before other rules
-            html = parseMarkdownTables(text);
-
+            let html = parseMarkdownTables(text);
             return html;
         }
 
@@ -604,79 +444,60 @@
             for (let i = 0; i < lines.length; i++) {
                 const line = lines[i];
                 const isTableRow = /^\|.+\|/.test(line.trim());
-                const isSeparator = /^\|[-| :]+\|$/.test(line.trim());
-
-                if (isSeparator) {
-                    // Skip separator
-                    continue;
-                } else if (isTableRow) {
-                    if (!inTable) {
-                        inTable = true; headerDone = false;
-                        tableHtml = '<table>';
-                    }
+                if (isTableRow) {
+                    if (!inTable) { inTable = true; headerDone = false; tableHtml = '<table style="width:100%; border-collapse:collapse; margin:1rem 0; font-size:0.9rem;">'; }
+                    if (/^\|[-| :]+\|$/.test(line.trim())) continue;
                     const cells = line.trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim());
                     if (!headerDone) {
-                        tableHtml += '<tr>' + cells.map(c => `<th>${inlineFormat(c)}</th>`).join('') + '</tr>';
+                        tableHtml += '<thead style="background:rgba(47,128,237,0.1);"><tr style="border-bottom:2px solid var(--primary);">' + cells.map(c => `<th style="padding:0.6rem; text-align:left; color:var(--primary-dark);">${inlineFormat(c)}</th>`).join('') + '</tr></thead><tbody>';
                         headerDone = true;
                     } else {
-                        tableHtml += '<tr>' + cells.map(c => `<td>${inlineFormat(c)}</td>`).join('') + '</tr>';
+                        tableHtml += '<tr style="border-bottom:1px solid rgba(0,0,0,0.05);">' + cells.map(c => `<td style="padding:0.6rem;">${inlineFormat(c)}</td>`).join('') + '</tr>';
                     }
                 } else {
-                    if (inTable) { result += tableHtml + '</table>'; inTable = false; tableHtml = ''; headerDone = false; }
+                    if (inTable) { result += tableHtml + '</tbody></table>'; inTable = false; }
                     result += formatLine(line) + '\n';
                 }
             }
-            if (inTable) result += tableHtml + '</table>';
+            if (inTable) result += tableHtml + '</tbody></table>';
             return result;
         }
 
         function formatLine(line) {
             const t = line.trim();
             if (!t) return '<br>';
-            if (t.startsWith('---')) return '<hr>';
-            if (t.startsWith('#### ')) return `<h4>${inlineFormat(t.slice(5))}</h4>`;
-            if (t.startsWith('### ')) return `<h4>${inlineFormat(t.slice(4))}</h4>`;
-            if (t.startsWith('## ')) return `<h4>${inlineFormat(t.slice(3))}</h4>`;
-            if (t.startsWith('# ')) return `<h4>${inlineFormat(t.slice(2))}</h4>`;
-            if (t.startsWith('> ')) return `<blockquote>${inlineFormat(t.slice(2))}</blockquote>`;
-            if (t.startsWith('• ') || t.startsWith('- ') || t.startsWith('* ')) return `<li>${inlineFormat(t.slice(2))}</li>`;
-            return `<p>${inlineFormat(t)}</p>`;
+            if (t.startsWith('---')) return '<hr style="border:none; border-top:1px solid rgba(0,0,0,0.1); margin:1.5rem 0;">';
+            if (t.startsWith('#### ')) return `<h4 style="font-size:1.1rem; color:var(--primary-dark); margin:1.2rem 0 0.5rem; font-weight:700;">${inlineFormat(t.slice(5))}</h4>`;
+            if (t.startsWith('### ')) return `<h4 style="font-size:1.2rem; color:var(--primary-dark); margin:1.3rem 0 0.5rem; font-weight:700;">${inlineFormat(t.slice(4))}</h4>`;
+            if (t.startsWith('## ')) return `<h4 style="font-size:1.3rem; color:var(--primary-dark); margin:1.4rem 0 0.5rem; font-weight:700;">${inlineFormat(t.slice(3))}</h4>`;
+            if (t.startsWith('# ')) return `<h4 style="font-size:1.4rem; color:var(--primary-dark); margin:1.5rem 0 0.5rem; font-weight:700;">${inlineFormat(t.slice(2))}</h4>`;
+            if (t.startsWith('> ')) return `<blockquote style="border-left:4px solid var(--primary); padding:0.8rem 1.2rem; background:rgba(47,128,237,0.04); border-radius:0 12px 12px 0; font-style:italic; color:var(--text-muted); margin:1rem 0;">${inlineFormat(t.slice(2))}</blockquote>`;
+            if (t.startsWith('• ') || t.startsWith('- ') || t.startsWith('* ')) return `<li style="margin-left:1.5rem; margin-bottom:0.5rem; color:var(--text);">${inlineFormat(t.slice(2))}</li>`;
+            return `<p style="margin-bottom:0.8rem; line-height:1.7;">${inlineFormat(t)}</p>`;
         }
 
         function inlineFormat(s) {
-            return s
-                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.+?)\*/g, '<em>$1</em>')
-                .replace(/`(.+?)`/g, '<code style="background:var(--bg-section);padding:0.1rem 0.4rem;border-radius:4px;font-family:monospace;font-size:0.85em;">$1</code>');
+            return s.replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--primary-dark); font-weight:700;">$1</strong>')
+                    .replace(/\*(.+?)\*/g, '<em style="color:var(--text-muted);">$1</em>')
+                    .replace(/`(.+?)`/g, '<code style="background:rgba(0,0,0,0.06); padding:0.15rem 0.4rem; border-radius:6px; font-family:monospace; font-size:0.9em; color:#E74C3C;">$1</code>');
         }
 
         function escHtml(s) {
-            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         }
 
         function showTyping() {
             const id = 'typing-' + Date.now();
             const row = document.createElement('div');
             row.className = 'msg-row'; row.id = id;
-            row.innerHTML = `<div class="msg-avatar bot-av">🧬</div><div class="bubble bot"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+            row.innerHTML = `<div class="msg-avatar bot-av" style="width:35px; height:35px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--green)); display:flex; align-items:center; justify-content:center; color:white;">🧬</div><div class="bubble bot"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
             chatBody.appendChild(row);
             scrollToBottom();
             return id;
         }
+
         function removeTyping(id) { const el = document.getElementById(id); if (el) el.remove(); }
         function scrollToBottom() { requestAnimationFrame(() => { chatBody.scrollTop = chatBody.scrollHeight; }); }
-
-        // Local fallback (mirrors backend logic)
-        function getLocalResponse(msg) {
-            const t = msg.toLowerCase();
-            const greets = ['hi', 'hello', 'hey', 'good morning', 'good evening', 'how are you', 'how r u'];
-            if (greets.some(g => t.includes(g)) && t.length < 30) return "Hello! 👋 I'm **Dr. Tricho**, your AI Hair Health Consultant. I'm here to help with any hair or scalp concern. What would you like to know today?";
-            if (/hair cycle|anagen|catagen|telogen|exogen/.test(t)) return "I have detailed clinical information on the hair growth cycle. Please check your connection to the TrichoAI backend server (port 9000) and try again — I can provide a full Anagen/Catagen/Telogen breakdown with clinical significance tables.";
-            if (/androgenetic|pattern|norwood|ludwig|aga|dht/.test(t)) return "For Androgenetic Alopecia, I can provide the full Norwood-Hamilton and Ludwig classification tables, along with evidence-based treatments. Please ensure the backend server is running on port 9000.";
-            if (/dandruff|flakes|seborrhe|malassezia/.test(t)) return "For Dandruff/Seborrheic Dermatitis, I have a detailed breakdown of active ingredients (Ketoconazole, ZnP, Selenium Sulfide) with mechanism and efficacy data. Please check your backend connection.";
-            return "I'm Dr. Tricho — please check that the TrichoAI backend server is running on **port 9000** so I can give you a full clinical response. Try: `cd TrichoAI && .\\venv\\Scripts\\python -m uvicorn backend.main:app --port 9000`";
-        }
     </script>
 </body>
 

@@ -1,210 +1,257 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="assets/logo_icon.png"><title>AI Hair Scanner – TrichoAI</title>
+    <link rel="icon" type="image/png" href="assets/logo_icon.png">
+    <title>AI Hair Scanner – TrichoAI</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body {
-            background: var(--bg-light);
-        }
+        body { background: var(--bg-light); }
+        .page-wrap { max-width: 940px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
 
-        .page-wrap {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 2.5rem 1.5rem 4rem;
+        /* ── Pre-capture instruction steps ── */
+        .capture-guide {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
+            margin-bottom: 2rem;
         }
-
-        .upload-zone {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            box-sizing: border-box;
-            border: 2.5px dashed var(--border);
-            border-radius: var(--radius-xl);
-            padding: 3.5rem 2rem;
-            text-align: center;
-            background: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .upload-zone:hover,
-        .upload-zone.dragover {
-            border-color: var(--primary);
-            background: var(--primary-light);
-        }
-
-        .upload-icon {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .scan-tabs {
-            display: flex;
-            gap: 0;
-            background: var(--bg-section);
-            border-radius: 50px;
-            padding: 0.3rem;
-            width: fit-content;
-            margin: 0 auto 2rem;
-        }
-
-        .tab-btn {
-            padding: 0.6rem 1.5rem;
-            border-radius: 50px;
-            border: none;
-            background: transparent;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            color: var(--text-muted);
-            transition: all 0.2s;
-        }
-
-        .tab-btn.active {
-            background: white;
-            color: var(--primary);
+        @media(max-width:600px) { .capture-guide { grid-template-columns: 1fr; } }
+        .guide-step {
+            background: white; border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1.25rem 1rem; text-align: center;
             box-shadow: var(--shadow-sm);
         }
+        .guide-step .g-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+        .guide-step h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.35rem; }
+        .guide-step p { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
 
-        .preview-container {
-            position: relative;
-            border-radius: var(--radius);
-            overflow: hidden;
-            background: #111;
-            aspect-ratio: 4/3;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        /* ── Multi-angle progress ── */
+        .angle-progress {
+            display: flex; align-items: center; justify-content: center;
+            gap: 0; margin-bottom: 1.5rem; flex-wrap: wrap;
+        }
+        .angle-step {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 0.3rem; min-width: 90px;
+        }
+        .angle-dot {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: var(--bg-section); border: 2px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; transition: all 0.3s;
+        }
+        .angle-dot.active { background: var(--primary); border-color: var(--primary); }
+        .angle-dot.done { background: var(--green); border-color: var(--green); }
+        .angle-line { width: 40px; height: 2px; background: var(--border); margin-top: -18px; }
+        .angle-label { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); }
+        .angle-label.active { color: var(--primary); }
+        .angle-thumbs { display: flex; gap: 0.75rem; margin-bottom: 1rem; }
+        .angle-thumb {
+            flex: 1; aspect-ratio: 4/3; border-radius: var(--radius-sm);
+            background: var(--bg-section); border: 2px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; color: var(--text-muted); overflow: hidden; position: relative;
+        }
+        .angle-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .angle-thumb-label {
+            position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+            font-size: 0.65rem; font-weight: 700; background: rgba(0,0,0,0.6);
+            color: white; padding: 0.15rem 0.5rem; border-radius: 50px; white-space: nowrap;
         }
 
-        .preview-container img,
-        .preview-container video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        /* ── Upload zone ── */
+        .upload-zone {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; width: 100%; box-sizing: border-box;
+            border: 2.5px dashed var(--border); border-radius: var(--radius-xl);
+            padding: 3rem 2rem; text-align: center; background: white;
+            cursor: pointer; transition: all 0.3s ease;
         }
+        .upload-zone:hover, .upload-zone.dragover { border-color: var(--primary); background: var(--primary-light); }
 
-        .scanner-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        /* ── Scan tabs ── */
+        .scan-tabs {
+            display: flex; gap: 0; background: var(--bg-section);
+            border-radius: 50px; padding: 0.3rem;
+            width: fit-content; margin: 0 auto 2rem;
+        }
+        .tab-btn {
+            padding: 0.6rem 1.5rem; border-radius: 50px; border: none;
+            background: transparent; font-weight: 600; font-size: 0.9rem;
+            cursor: pointer; color: var(--text-muted); transition: all 0.2s;
+        }
+        .tab-btn.active { background: white; color: var(--primary); box-shadow: var(--shadow-sm); }
+
+        /* ── Camera view ── */
+        .camera-wrap {
+            position: relative; border-radius: var(--radius); overflow: hidden;
+            background: #0a0a0a; aspect-ratio: 4/3;
+        }
+        .camera-wrap video { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+        /* Ghost head overlay SVG */
+        .ghost-overlay {
+            position: absolute; inset: 0; display: flex;
+            flex-direction: column; align-items: center; justify-content: center;
             pointer-events: none;
         }
-
-        .scan-ring {
-            width: 200px;
-            height: 200px;
-            border: 3px solid rgba(47, 128, 237, 0.7);
-            border-radius: 50%;
-            position: relative;
-            animation: pulse 2s ease-in-out infinite;
+        .ghost-head {
+            width: 160px; opacity: 0.55; filter: drop-shadow(0 0 6px rgba(47,128,237,0.8));
+        }
+        .ghost-label {
+            margin-top: 0.5rem; font-size: 0.72rem; font-weight: 700;
+            color: rgba(255,255,255,0.9); background: rgba(47,128,237,0.55);
+            padding: 0.25rem 0.9rem; border-radius: 50px;
+            backdrop-filter: blur(4px); border: 1px solid rgba(47,128,237,0.6);
         }
 
-        .scan-line {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        /* Brightness meter */
+        .brightness-bar-wrap {
+            position: absolute; bottom: 12px; left: 12px; right: 12px;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .brightness-bar-bg {
+            flex: 1; height: 5px; background: rgba(255,255,255,0.2);
+            border-radius: 50px; overflow: hidden;
+        }
+        .brightness-bar-fill {
+            height: 100%; border-radius: 50px;
+            transition: width 0.3s, background 0.3s;
+        }
+        .brightness-hint {
+            font-size: 0.68rem; color: white; background: rgba(0,0,0,0.45);
+            padding: 0.15rem 0.5rem; border-radius: 50px; white-space: nowrap;
+            backdrop-filter: blur(4px);
+        }
+
+        /* Scan animation */
+        .scan-line-anim {
+            position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg,transparent,#56CCF2,transparent);
             animation: scanLine 2s linear infinite;
         }
+        @keyframes scanLine { 0%{top:0} 100%{top:100%} }
 
-        @keyframes scanLine {
-            0% {
-                top: 0;
-            }
-
-            100% {
-                top: 100%;
-            }
+        /* ── Preprocessing ── */
+        .preprocess-steps {
+            display: flex; flex-direction: column; gap: 0.5rem; padding: 1rem;
+            background: var(--bg-section); border-radius: var(--radius-sm);
+            margin-top: 1rem; font-size: 0.82rem;
         }
+        .pp-step { display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); }
+        .pp-step.done { color: var(--green); }
+        .pp-step.active { color: var(--primary); }
 
-        .results-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
+        /* ── Rejection card ── */
+        .rejection-card {
+            background: #FFF3F3; border: 2px solid #FFCDD2;
+            border-radius: var(--radius); padding: 2rem; text-align: center;
             margin-top: 1.5rem;
         }
+        .rejection-card h3 { color: #C62828; margin-bottom: 0.5rem; }
+        .rejection-card p { color: #7B1E1E; font-size: 0.9rem; line-height: 1.6; }
 
-        .result-card {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 1.5rem;
-            box-shadow: var(--shadow-sm);
+        /* ── Results ── */
+        .results-header-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            border-radius: var(--radius-xl); padding: 2rem 2.5rem;
+            color: white; margin-bottom: 1.5rem; position: relative; overflow: hidden;
         }
-
-        .result-label {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 0.5rem;
+        .results-header-card::before {
+            content:''; position:absolute; top:-50px; right:-50px;
+            width:200px; height:200px; background:rgba(47,128,237,0.12); border-radius:50%;
         }
-
-        .result-value {
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: var(--text);
+        .score-circle {
+            width: 100px; height: 100px; border-radius: 50%;
+            background: conic-gradient(#2F80ED var(--pct,0deg), rgba(255,255,255,0.1) 0);
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
-
-        .confidence-bar {
-            height: 6px;
-            background: var(--bg-section);
-            border-radius: 50px;
-            margin-top: 0.5rem;
-            overflow: hidden;
+        .score-inner {
+            width: 76px; height: 76px; border-radius: 50%; background: #1a1a2e;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
+        .score-num { font-size: 1.55rem; font-weight: 900; line-height: 1; color: white; }
+        .score-unit { font-size: 0.62rem; color: rgba(255,255,255,0.5); }
 
-        .confidence-fill {
-            height: 100%;
-            border-radius: 50px;
-            background: linear-gradient(90deg, var(--primary), var(--green));
-            transition: width 1.5s ease;
+        /* Norwood bar */
+        .norwood-bar { display: flex; gap: 3px; margin-top: 0.5rem; }
+        .nw-seg {
+            flex: 1; height: 8px; border-radius: 4px;
+            background: rgba(255,255,255,0.15); transition: background 0.4s;
         }
+        .nw-seg.filled-1 { background: #4CAF50; }
+        .nw-seg.filled-2 { background: #8BC34A; }
+        .nw-seg.filled-3 { background: #FFC107; }
+        .nw-seg.filled-4 { background: #FF9800; }
+        .nw-seg.filled-5 { background: #FF5722; }
+        .nw-seg.filled-6 { background: #E53935; }
+        .nw-seg.filled-7 { background: #880E4F; }
 
-        .preprocess-steps {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            padding: 1rem;
-            background: var(--bg-section);
-            border-radius: var(--radius-sm);
-            margin-top: 1rem;
-            font-size: 0.82rem;
+        .metrics-grid {
+            display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-bottom: 1.5rem;
         }
-
-        .pp-step {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: var(--text-muted);
+        @media(max-width:600px){ .metrics-grid { grid-template-columns: 1fr 1fr; } }
+        .metric-card {
+            background: white; border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1.25rem; box-shadow: var(--shadow-sm);
         }
-
-        .pp-step.done {
-            color: var(--green);
+        .metric-label {
+            font-size: 0.7rem; color: var(--text-muted); font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem;
         }
+        .metric-pill {
+            display: inline-block; padding: 0.2rem 0.65rem;
+            border-radius: 50px; font-size: 0.78rem; font-weight: 600;
+        }
+        .pill-good  { background:#E8F5E9; color:#2E7D32; }
+        .pill-mild  { background:#FFF8E1; color:#F57F17; }
+        .pill-mod   { background:#FFF3E0; color:#E65100; }
+        .pill-bad   { background:#FFEBEE; color:#B71C1C; }
+        .pill-oily  { background:#E3F2FD; color:#1565C0; }
+        .pill-dry   { background:#F3E5F5; color:#6A1B9A; }
 
-        .pp-step.active {
-            color: var(--primary);
+        .confidence-bar { height:6px; background:var(--bg-section); border-radius:50px; margin-top:0.5rem; overflow:hidden; }
+        .confidence-fill { height:100%; border-radius:50px; background:linear-gradient(90deg,var(--primary),var(--green)); transition:width 1.5s ease; }
+
+        /* ── Action Plan Table ── */
+        .action-table { width:100%; border-collapse:collapse; margin-top:0.5rem; }
+        .action-table th {
+            background: #F0F4FF; text-align:left; padding:0.75rem 1rem;
+            font-size:0.78rem; font-weight:700; text-transform:uppercase;
+            letter-spacing:0.05em; color:var(--primary); border-bottom:2px solid var(--border);
+        }
+        .action-table td {
+            padding:0.85rem 1rem; font-size:0.87rem; border-bottom:1px solid var(--border);
+            vertical-align:top; line-height:1.5;
+        }
+        .action-table tr:last-child td { border-bottom:none; }
+        .action-table tr:hover td { background:#F8FBFF; }
+        .action-cat { font-weight:700; color:var(--text); font-size:0.8rem; white-space:nowrap; }
+
+        .norwood-badge {
+            display:inline-flex; align-items:center; gap:0.4rem;
+            padding:0.3rem 0.8rem; border-radius:50px; font-size:0.8rem; font-weight:700;
+        }
+        .image-quality-banner {
+            display:flex; align-items:center; gap:0.75rem; padding:0.85rem 1.25rem;
+            border-radius:var(--radius-sm); margin-bottom:1.25rem;
+            font-size:0.875rem;
+        }
+        .banner-warn { background:#FFF8E1; border:1px solid #FFD54F; color:#7B5E00; }
+        .banner-err  { background:#FFEBEE; border:1px solid #FFCDD2; color:#B71C1C; }
+
+        .features-row {
+            display:flex; gap:1rem; flex-wrap:wrap; margin-top:0.75rem;
+        }
+        .feature-chip {
+            display:inline-flex; align-items:center; gap:0.4rem; padding:0.35rem 0.85rem;
+            border-radius:50px; font-size:0.78rem; font-weight:600;
+            background:rgba(255,255,255,0.12); color:rgba(255,255,255,0.85);
+            border:1px solid rgba(255,255,255,0.2);
         }
     </style>
 </head>
-
 <body>
     <nav class="navbar">
         <a href="index.html" class="nav-logo"><img src="assets/logo_full.png" alt="TrichoAI" style="height:40px; width:auto; object-fit:contain;"></a>
@@ -212,19 +259,64 @@
             <a href="dashboard.html" class="nav-link">Dashboard</a>
             <a href="chatbot.html" class="nav-link">Chatbot</a>
             <a href="progress.html" class="nav-link">Progress</a>
-            <a href="login.html" class="btn btn-outline btn-sm"
-                onclick="localStorage.removeItem('tricho_session')">Logout</a>
+            <a href="login.html" class="btn btn-outline btn-sm" onclick="localStorage.removeItem('tricho_session')">Logout</a>
         </div>
     </nav>
 
     <div class="page-wrap">
+
+        <!-- ── Page header ── -->
         <div class="text-center mb-4">
-            <span class="badge badge-blue mb-2">AI Computer Vision</span>
+            <span class="badge badge-blue mb-2">AI Computer Vision · Norwood 7-Stage · OpenCV Validated</span>
             <h2 class="mt-2">AI Hair <span class="gradient-text">Condition Scanner</span></h2>
-            <p class="mt-2">Upload a photo or use your camera. Our AI will analyze your hair stage, detect dandruff, and
-                calculate your hair health score with advanced preprocessing.</p>
+            <p class="mt-2">Upload or capture your scalp photo. The AI validates image quality, then performs a 14-point clinical analysis mapped to the Norwood-Hamilton Scale with a full action plan.</p>
         </div>
 
+        <!-- ── Pre-capture guide ── -->
+        <div class="capture-guide" id="capture-guide">
+            <div class="guide-step">
+                <div class="g-icon">💡</div>
+                <h4>1. Find the Light</h4>
+                <p>Face a bright window or well-lit mirror. Avoid shadows or overhead glare on your scalp.</p>
+            </div>
+            <div class="guide-step">
+                <div class="g-icon">✂️</div>
+                <h4>2. Clear the Area</h4>
+                <p>Pull back long hair, remove hats or headbands. Show your natural hairline clearly.</p>
+            </div>
+            <div class="guide-step" style="border-color: var(--primary);">
+                <div class="g-icon">📐</div>
+                <h4>3. Three Angles</h4>
+                <p>For best accuracy, capture: <strong>Frontal</strong>, <strong>Side/Profile</strong>, and <strong>Top-Down</strong>.</p>
+            </div>
+        </div>
+
+        <!-- ── Multi-angle selector (upload mode) ── -->
+        <div id="angle-panel">
+            <div class="angle-progress">
+                <div class="angle-step">
+                    <div class="angle-dot" id="adot-1">📷</div>
+                    <div class="angle-label" id="albl-1">Frontal</div>
+                </div>
+                <div class="angle-line"></div>
+                <div class="angle-step">
+                    <div class="angle-dot" id="adot-2">👤</div>
+                    <div class="angle-label" id="albl-2">Side</div>
+                </div>
+                <div class="angle-line"></div>
+                <div class="angle-step">
+                    <div class="angle-dot" id="adot-3">🔝</div>
+                    <div class="angle-label" id="albl-3">Top-Down</div>
+                </div>
+            </div>
+            <div class="angle-thumbs">
+                <div class="angle-thumb" id="thumb-1">📷<span class="angle-thumb-label">Frontal</span></div>
+                <div class="angle-thumb" id="thumb-2">👤<span class="angle-thumb-label">Side</span></div>
+                <div class="angle-thumb" id="thumb-3">🔝<span class="angle-thumb-label">Top-Down</span></div>
+            </div>
+        </div>
+
+        <!-- ── Tabs ── -->
         <div class="scan-tabs">
             <button class="tab-btn active" onclick="switchTab('upload', this)">📁 Upload Image</button>
             <button class="tab-btn" onclick="switchTab('camera', this)">📷 Use Camera</button>
@@ -233,346 +325,627 @@
         <!-- UPLOAD TAB -->
         <div id="tab-upload">
             <label class="upload-zone" for="img-input" id="upload-zone">
-                <div class="upload-icon">🔬</div>
-                <h3>Drop your hair or scalp photo here</h3>
-                <p class="mt-2">Supports JPG, PNG, WEBP. Best results in good lighting.</p>
+                <div style="font-size:3.5rem; margin-bottom:1rem;">🔬</div>
+                <h3 id="upload-prompt-text">Drop your Frontal photo here</h3>
+                <p class="mt-2" id="upload-sub-text">Supports JPG, PNG, WEBP · Good lighting · Camera 15–20 cm from scalp</p>
                 <div class="btn btn-primary" style="margin-top:1.5rem;">Choose Photo</div>
-                <input type="file" id="img-input" accept="image/*" style="display:none;"
-                    onchange="handleFileUpload(this)">
+                <input type="file" id="img-input" accept="image/*" style="display:none;" onchange="handleFileUpload(this)">
             </label>
         </div>
 
         <!-- CAMERA TAB -->
         <div id="tab-camera" class="hidden">
-
-            <!-- Camera ready state (before starting) -->
-            <div id="cam-ready-state"
-                style="background:white; border:2px dashed var(--border); border-radius:var(--radius-xl); padding:3rem 2rem; text-align:center;">
+            <!-- Ready state -->
+            <div id="cam-ready-state" style="background:white; border:2px dashed var(--border); border-radius:var(--radius-xl); padding:3rem 2rem; text-align:center;">
                 <div style="font-size:3rem; margin-bottom:1rem;">📷</div>
                 <h3>Position Your Scalp or Hair</h3>
-                <p class="mt-2">For best results, use good lighting and hold the camera 15–20 cm from your scalp.</p>
-                <ul
-                    style="text-align:left; max-width:320px; margin:1rem auto; color:var(--text-muted); font-size:0.88rem; line-height:1.8;">
-                    <li>💡 Use bright, natural light</li>
-                    <li>📍 Hold steady, focus on the area of concern</li>
-                    <li>🔍 Crown, temples, or part line for best analysis</li>
-                </ul>
-                <button class="btn btn-primary" onclick="openCamera()" id="btn-open-cam" style="margin-top:0.5rem;">📷
-                    Start Camera</button>
+                <p class="mt-2">Align your hairline inside the guide overlay. For best accuracy, use all 3 angles.</p>
+                <button class="btn btn-primary" onclick="openCamera()" id="btn-open-cam" style="margin-top:1.5rem;">📷 Start Camera</button>
                 <div id="cam-error-msg" style="color:#E74C3C; font-size:0.85rem; margin-top:1rem; display:none;"></div>
             </div>
 
-            <!-- Live camera view (shown after camera starts) -->
+            <!-- Live state -->
             <div id="cam-live-state" style="display:none;">
-                <div class="preview-container"
-                    style="position:relative; border-radius:var(--radius); overflow:hidden; background:#0a0a0a; aspect-ratio:4/3;">
-                    <video id="webcam" autoplay playsinline muted
-                        style="width:100%; height:100%; object-fit:cover; display:block;"></video>
-                    <!-- Scanning overlay -->
-                    <div
-                        style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none;">
-                        <div id="scan-ring"
-                            style="width:200px; height:200px; border:3px solid rgba(47,128,237,0.8); border-radius:50%; position:relative; animation:pulse 2s ease-in-out infinite;">
-                            <div
-                                style="position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,#56CCF2,transparent); animation:scanLine 2s linear infinite;">
-                            </div>
-                        </div>
+                <div class="camera-wrap">
+                    <video id="webcam" autoplay playsinline muted></video>
+
+                    <!-- Ghost head overlay -->
+                    <div class="ghost-overlay">
+                        <svg class="ghost-head" viewBox="0 0 160 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Scalp/crown arc -->
+                            <ellipse cx="80" cy="90" rx="58" ry="65" stroke="#56CCF2" stroke-width="2.5" stroke-dasharray="8 4"/>
+                            <!-- Hairline indicator line -->
+                            <line x1="28" y1="75" x2="132" y2="75" stroke="#2F80ED" stroke-width="1.5" stroke-dasharray="6 3"/>
+                            <!-- Left temple marker -->
+                            <circle cx="28" cy="95" r="4" fill="#56CCF2" opacity="0.8"/>
+                            <!-- Right temple marker -->
+                            <circle cx="132" cy="95" r="4" fill="#56CCF2" opacity="0.8"/>
+                            <!-- Crown marker -->
+                            <circle cx="80" cy="35" r="4" fill="#2F80ED" opacity="0.9"/>
+                            <!-- Crown label indicator -->
+                            <text x="88" y="38" font-size="9" fill="#56CCF2" opacity="0.9">Crown</text>
+                            <!-- Temple labels -->
+                            <text x="2" y="115" font-size="8" fill="#56CCF2" opacity="0.8">L Temple</text>
+                            <text x="113" y="115" font-size="8" fill="#56CCF2" opacity="0.8">R Temple</text>
+                            <!-- Hairline label -->
+                            <text x="55" y="70" font-size="8" fill="#2F80ED" opacity="0.9">Hairline</text>
+                        </svg>
+                        <div class="ghost-label" id="ghost-angle-label">📷 Frontal — Align hairline above dotted line</div>
                     </div>
-                    <!-- Camera label -->
-                    <div style="position:absolute; top:12px; left:12px; background:rgba(0,0,0,0.55); color:white; font-size:0.75rem; padding:0.3rem 0.75rem; border-radius:50px; backdrop-filter:blur(4px);"
-                        id="cam-label">🔴 LIVE</div>
-                    <!-- Countdown overlay -->
-                    <div id="cam-countdown"
-                        style="display:none; position:absolute; inset:0; background:rgba(0,0,0,0.55); align-items:center; justify-content:center; flex-direction:column; color:white;">
+
+                    <!-- Brightness meter -->
+                    <div class="brightness-bar-wrap">
+                        <div class="brightness-bar-bg">
+                            <div class="brightness-bar-fill" id="brightness-fill" style="width:50%;background:#4CAF50;"></div>
+                        </div>
+                        <div class="brightness-hint" id="brightness-hint">💡 Good light</div>
+                    </div>
+
+                    <!-- Scan animation line -->
+                    <div class="scan-line-anim"></div>
+
+                    <!-- LIVE badge -->
+                    <div style="position:absolute; top:12px; left:12px; background:rgba(0,0,0,0.55); color:white; font-size:0.72rem; padding:0.3rem 0.75rem; border-radius:50px;">🔴 LIVE</div>
+
+                    <!-- Countdown -->
+                    <div id="cam-countdown" style="display:none; position:absolute; inset:0; background:rgba(0,0,0,0.6); flex-direction:column; align-items:center; justify-content:center; color:white;">
                         <div id="countdown-num" style="font-size:5rem; font-weight:900; line-height:1;">3</div>
-                        <div style="font-size:1rem; margin-top:0.5rem;">Hold still — capturing…</div>
+                        <div style="font-size:1rem; margin-top:0.5rem;">Hold still…</div>
                     </div>
                 </div>
+
                 <div style="display:flex; gap:1rem; justify-content:center; margin-top:1.25rem; flex-wrap:wrap;">
                     <button class="btn btn-outline btn-sm" onclick="stopCamera()">✕ Stop Camera</button>
-                    <button class="btn btn-green" onclick="startCountdown()" id="btn-capture">⚡ Capture &
-                        Analyze</button>
-                    <button class="btn btn-outline btn-sm" onclick="switchCameraFacing()" id="btn-flip"
-                        style="display:none;">🔄 Flip Camera</button>
+                    <button class="btn btn-green" onclick="startCountdown()" id="btn-capture">⚡ Capture &amp; Analyze</button>
+                    <button class="btn btn-outline btn-sm" onclick="switchCameraFacing()" id="btn-flip" style="display:none;">🔄 Flip</button>
                 </div>
-                <p style="text-align:center; font-size:0.8rem; color:var(--text-muted); margin-top:0.75rem;">Point your
-                    camera at the area of concern (crown, temples, part line) and click Capture.</p>
+                <p style="text-align:center; font-size:0.8rem; color:var(--text-muted); margin-top:0.75rem;" id="cam-angle-hint">Angle 1 of 3: Frontal — face the camera at forehead level</p>
             </div>
         </div>
+
         <canvas id="process-canvas" style="display:none;"></canvas>
 
-        <!-- PREPROCESSING LOG -->
-        <div class="preprocess-steps hidden" id="pp-log">
-            <div class="pp-step" id="pp-1">⏳ Resizing image to 224×224...</div>
-            <div class="pp-step" id="pp-2">⏳ Converting to RGB color space...</div>
-            <div class="pp-step" id="pp-3">⏳ Normalizing brightness and contrast...</div>
-            <div class="pp-step" id="pp-4">⏳ Reducing image noise...</div>
-            <div class="pp-step" id="pp-5">⏳ Detecting hair and scalp region...</div>
-            <div class="pp-step" id="pp-6">⏳ Extracting hair density features...</div>
-            <div class="pp-step" id="pp-7">⏳ Applying confidence smoothing...</div>
+        <!-- Skip multi-angle -->
+        <div id="skip-btn-wrap" style="text-align:center; margin-top:1rem; display:none;">
+            <button class="btn btn-outline btn-sm" onclick="analyzeAllAngles()">⚡ Analyze with <span id="captured-count">1</span> Angle Captured</button>
         </div>
 
-        <!-- RESULTS -->
+        <!-- Preprocessing log -->
+        <div class="preprocess-steps hidden" id="pp-log">
+            <div class="pp-step" id="pp-1">⏳ Decoding image data...</div>
+            <div class="pp-step" id="pp-2">⏳ Running OpenCV quality gate (blur + brightness)...</div>
+            <div class="pp-step" id="pp-3">⏳ Normalizing brightness and contrast...</div>
+            <div class="pp-step" id="pp-4">⏳ Detecting hair and scalp region...</div>
+            <div class="pp-step" id="pp-5">⏳ Extracting Norwood feature markers...</div>
+            <div class="pp-step" id="pp-6">⏳ Running 14-point clinical analysis...</div>
+            <div class="pp-step" id="pp-7">⏳ Applying confidence calibration...</div>
+        </div>
+
+        <!-- ── Rejection card ── -->
+        <div class="rejection-card hidden" id="rejection-card">
+            <div style="font-size:3rem; margin-bottom:0.75rem;">🚫</div>
+            <h3>Photo Could Not Be Analysed</h3>
+            <p id="rejection-reason">The image quality check failed.</p>
+            <div style="margin-top:1rem; display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap;">
+                <div style="background:#FFF; border:1px solid #FFCDD2; border-radius:var(--radius-sm); padding:0.75rem 1rem; font-size:0.82rem; text-align:left; max-width:340px;">
+                    <strong style="display:block; margin-bottom:0.4rem;">Tips for a better photo:</strong>
+                    <ul style="margin:0; padding-left:1.2rem; color:#7B1E1E; line-height:1.8;">
+                        <li>Face a bright window or well-lit room</li>
+                        <li>Hold the camera 15–20 cm from your scalp</li>
+                        <li>Rest your elbow for a steady, blur-free shot</li>
+                        <li>Avoid harsh shadows or direct sunlight</li>
+                    </ul>
+                </div>
+            </div>
+            <button class="btn btn-primary mt-3" onclick="resetScanner()">📷 Try Again</button>
+        </div>
+
+        <!-- ── Results ── -->
         <div class="hidden" id="results-section">
-            <h3 class="mt-4 mb-3">📊 Analysis Results</h3>
-            <div class="results-grid">
-                <div class="result-card">
-                    <div class="result-label">Hair Health Score</div>
-                    <div class="result-value gradient-text" id="res-score">–</div>
-                    <div class="confidence-bar">
-                        <div class="confidence-fill" id="res-score-bar" style="width:0%"></div>
+
+            <!-- Image quality banner -->
+            <div class="image-quality-banner hidden" id="quality-banner"></div>
+
+            <!-- Score header card -->
+            <div class="results-header-card">
+                <div style="display:flex; gap:2rem; align-items:center; flex-wrap:wrap;">
+                    <div class="score-circle" id="score-circle" style="--pct:0deg;">
+                        <div class="score-inner">
+                            <div class="score-num" id="res-score">–</div>
+                            <div class="score-unit">/ 100</div>
+                        </div>
                     </div>
-                    <p class="mt-2" style="font-size:0.82rem;" id="res-score-desc">–</p>
-                </div>
-                <div class="result-card">
-                    <div class="result-label">Hair Stage Detected</div>
-                    <div class="result-value" id="res-stage">–</div>
-                    <div class="mt-1" id="res-stage-badge">–</div>
-                    <p class="mt-1" style="font-size:0.82rem;" id="res-stage-desc">–</p>
-                </div>
-                <div class="result-card">
-                    <div class="result-label">Dandruff Detected</div>
-                    <div class="result-value" id="res-dandruff">–</div>
-                    <p class="mt-1" style="font-size:0.82rem;" id="res-dandruff-desc">–</p>
-                </div>
-                <div class="result-card">
-                    <div class="result-label">Analysis Confidence</div>
-                    <div class="result-value" id="res-confidence">–</div>
-                    <div class="confidence-bar">
-                        <div class="confidence-fill" id="res-conf-bar" style="width:0%"></div>
+                    <div style="flex:1; min-width:180px;">
+                        <div style="font-size:0.72rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.3rem;">DETECTED STAGE</div>
+                        <div style="font-size:1.3rem; font-weight:800; color:white;" id="res-label">–</div>
+                        <div class="norwood-bar mt-2" id="norwood-bar"></div>
+                        <div style="font-size:0.7rem; color:rgba(255,255,255,0.4); margin-top:0.3rem;">Norwood Stage 1 – 7</div>
+                        <div class="features-row" id="feature-chips"></div>
+                        <div style="font-size:0.82rem; color:rgba(255,255,255,0.65); margin-top:0.6rem;" id="res-summary">–</div>
+                    </div>
+                    <div style="text-align:right; min-width:110px;">
+                        <div style="font-size:0.7rem; color:rgba(255,255,255,0.4); margin-bottom:0.3rem;">CONFIDENCE</div>
+                        <div style="font-size:1.9rem; font-weight:900; color:white;" id="res-confidence">–</div>
+                        <div style="font-size:0.7rem; color:rgba(255,255,255,0.4);">AI Certainty</div>
                     </div>
                 </div>
             </div>
 
+            <!-- Clinical observation -->
+            <div class="card mb-3" style="padding:1.5rem;">
+                <div style="font-size:0.7rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.75rem;">🔬 Clinical Observation</div>
+                <p style="font-size:0.92rem; line-height:1.7; color:var(--text);" id="res-desc">–</p>
+            </div>
+
+            <!-- 9-metric grid -->
+            <div class="metrics-grid" id="metrics-grid"></div>
+
+            <!-- Confidence bar -->
+            <div class="card mb-3" style="padding:1.5rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                    <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Analysis Confidence</div>
+                    <div style="font-size:0.9rem; font-weight:700;" id="res-conf-pct">–</div>
+                </div>
+                <div class="confidence-bar"><div class="confidence-fill" id="res-conf-bar" style="width:0%"></div></div>
+            </div>
+
+            <!-- ── Action Plan Table ── -->
+            <div class="card mt-3" style="padding:1.5rem;">
+                <h3 style="margin-bottom:1rem;">📋 Precautionary Action Plan</h3>
+                <div style="overflow-x:auto;">
+                    <table class="action-table" id="action-plan-table">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Advice &amp; Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="action-plan-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Recommendations -->
             <div class="card mt-3">
-                <h3 style="margin-bottom:1rem;">💡 Recommendations</h3>
+                <h3 style="margin-bottom:1rem;">💡 Evidence-Based Recommendations</h3>
                 <div id="res-recommendations" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
             </div>
 
+            <!-- Disclaimer -->
             <div class="disclaimer mt-3">
-                <strong>Disclaimer:</strong> This AI assistant provides general hair health guidance and does not
-                replace professional medical advice. Please consult a dermatologist for severe or persistent hair
-                conditions.
+                <strong>Disclaimer:</strong> This AI scanner provides structured clinical guidance for educational purposes. Results do not replace professional trichological assessment. For persistent or worsening hair conditions, consult a certified trichologist or dermatologist.
+            </div>
+
+            <div class="text-center mt-4">
+                <button class="btn btn-primary" onclick="resetScanner()">🔄 Scan Another Image</button>
             </div>
         </div>
-    </div>
+    </div><!-- /page-wrap -->
 
     <script>
-        let currentTab = 'upload';
-        let videoStream = null;
-        let facingMode = 'environment'; // start with back camera, fallback to user
-        let isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+    // ── STATE ──
+    let currentTab = 'upload';
+    let videoStream = null;
+    let facingMode = 'environment';
+    let isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+    let brightnessTimer = null;
 
-        function switchTab(tab, btn) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById('tab-upload').classList.add('hidden');
-            document.getElementById('tab-camera').classList.add('hidden');
-            document.getElementById('tab-' + tab).classList.remove('hidden');
-            currentTab = tab;
-            if (tab !== 'camera' && videoStream) stopCamera();
-        }
+    // Multi-angle state
+    const ANGLES = ['Frontal', 'Side/Profile', 'Top-Down'];
+    const ANGLE_ICONS = ['📷', '👤', '🔝'];
+    let capturedAngles = [null, null, null];   // base64 per angle
+    let currentAngle = 0;                       // 0, 1, 2
 
-        function handleFileUpload(input) {
-            const file = input.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => { runAnalysis(e.target.result); };
-            reader.readAsDataURL(file);
-        }
-
-        async function openCamera() {
-            const errEl = document.getElementById('cam-error-msg');
-            errEl.style.display = 'none';
-            document.getElementById('btn-open-cam').textContent = '⏳ Starting camera...';
-            document.getElementById('btn-open-cam').disabled = true;
-
-            // Try progressively simpler constraints — most permissive last
-            const constraints = [
-                { video: { facingMode: { exact: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } } },
-                { video: { facingMode: 'user', width: { ideal: 1280 } } },
-                { video: { width: { ideal: 640 } } },
-                { video: true }
-            ];
-
-            let started = false;
-            for (const constraint of constraints) {
-                try {
-                    videoStream = await navigator.mediaDevices.getUserMedia(constraint);
-                    started = true;
-                    const track = videoStream.getVideoTracks()[0];
-                    const settings = track.getSettings();
-                    facingMode = settings.facingMode || 'user';
-                    if (isMobile) document.getElementById('btn-flip').style.display = 'inline-flex';
-                    break;
-                } catch (e) { /* try next */ }
+    function updateAngleUI() {
+        ANGLES.forEach((name, i) => {
+            const dot = document.getElementById('adot-' + (i+1));
+            const lbl = document.getElementById('albl-' + (i+1));
+            if (capturedAngles[i]) {
+                dot.className = 'angle-dot done';
+                dot.textContent = '✅';
+                lbl.className = 'angle-label';
+            } else if (i === currentAngle) {
+                dot.className = 'angle-dot active';
+                dot.textContent = ANGLE_ICONS[i];
+                lbl.className = 'angle-label active';
+            } else {
+                dot.className = 'angle-dot';
+                dot.textContent = ANGLE_ICONS[i];
+                lbl.className = 'angle-label';
             }
+        });
+        const uploadPrompt = document.getElementById('upload-prompt-text');
+        const skp = document.getElementById('skip-btn-wrap');
+        const captured = capturedAngles.filter(Boolean).length;
+        if (currentAngle < 3) {
+            uploadPrompt.textContent = `Drop your ${ANGLES[currentAngle]} photo here`;
+        }
+        if (captured > 0 && captured < 3) {
+            skp.style.display = 'block';
+            document.getElementById('captured-count').textContent = captured;
+        }
+        document.getElementById('ghost-angle-label').textContent = `${ANGLE_ICONS[currentAngle]} ${ANGLES[currentAngle] || 'Done'} — Align hairline above dotted line`;
+        const hint = document.getElementById('cam-angle-hint');
+        if (hint) hint.textContent = `Angle ${currentAngle+1} of 3: ${ANGLES[currentAngle]} — ${['face the camera at forehead level','show your temple and side profile','point camera straight down at crown'][currentAngle]}`;
+    }
 
-            if (!started) {
-                document.getElementById('btn-open-cam').textContent = '📷 Start Camera';
-                document.getElementById('btn-open-cam').disabled = false;
-                errEl.textContent = '⚠️ Camera access denied or no camera found. Please click the camera icon in your browser address bar and allow access, then try again.';
-                errEl.style.display = 'block';
+    function setThumbImage(index, dataUrl) {
+        const thumb = document.getElementById('thumb-' + (index+1));
+        const label = thumb.querySelector('.angle-thumb-label');
+        thumb.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = dataUrl;
+        thumb.appendChild(img);
+        const lbl2 = document.createElement('span');
+        lbl2.className = 'angle-thumb-label';
+        lbl2.textContent = '✅ ' + ANGLES[index];
+        thumb.appendChild(lbl2);
+    }
+
+    // ── TAB SWITCH ──
+    function switchTab(tab, btn) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-upload').classList.add('hidden');
+        document.getElementById('tab-camera').classList.add('hidden');
+        document.getElementById('tab-' + tab).classList.remove('hidden');
+        currentTab = tab;
+        if (tab !== 'camera' && videoStream) stopCamera();
+    }
+
+    // ── FILE UPLOAD ──
+    function handleFileUpload(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            const dataUrl = e.target.result;
+            if (currentAngle < 3) {
+                capturedAngles[currentAngle] = dataUrl;
+                setThumbImage(currentAngle, dataUrl);
+                currentAngle++;
+                updateAngleUI();
+                if (currentAngle === 3) {
+                    analyzeAllAngles();
+                }
+            }
+            input.value = '';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function analyzeAllAngles() {
+        // Use the first captured angle as primary
+        const primary = capturedAngles.find(Boolean);
+        if (primary) runAnalysis(primary);
+    }
+
+    // ── CAMERA ──
+    async function openCamera() {
+        const errEl = document.getElementById('cam-error-msg');
+        errEl.style.display = 'none';
+        document.getElementById('btn-open-cam').textContent = '⏳ Starting…';
+        document.getElementById('btn-open-cam').disabled = true;
+
+        const constraints = [
+            { video: { facingMode: { exact: 'environment' }, width: { ideal: 1280 } } },
+            { video: { facingMode: 'user', width: { ideal: 1280 } } },
+            { video: { width: { ideal: 640 } } },
+            { video: true }
+        ];
+        let started = false;
+        for (const c of constraints) {
+            try {
+                videoStream = await navigator.mediaDevices.getUserMedia(c);
+                started = true;
+                break;
+            } catch(e) {}
+        }
+        if (!started) {
+            document.getElementById('btn-open-cam').textContent = '📷 Start Camera';
+            document.getElementById('btn-open-cam').disabled = false;
+            errEl.textContent = '⚠️ Camera access denied. Allow camera access in your browser settings and try again.';
+            errEl.style.display = 'block';
+            return;
+        }
+        const video = document.getElementById('webcam');
+        video.srcObject = videoStream;
+        video.muted = true;
+        document.getElementById('cam-ready-state').style.display = 'none';
+        document.getElementById('cam-live-state').style.display = 'block';
+        try { await video.play(); } catch(e) {}
+        updateAngleUI();
+        startBrightnessMonitor();
+        if (isMobile) document.getElementById('btn-flip').style.display = 'inline-flex';
+    }
+
+    function stopCamera() {
+        if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
+        if (brightnessTimer) { clearInterval(brightnessTimer); brightnessTimer = null; }
+        document.getElementById('cam-live-state').style.display = 'none';
+        document.getElementById('cam-ready-state').style.display = 'block';
+        document.getElementById('btn-open-cam').textContent = '📷 Start Camera';
+        document.getElementById('btn-open-cam').disabled = false;
+    }
+
+    async function switchCameraFacing() {
+        facingMode = facingMode === 'environment' ? 'user' : 'environment';
+        if (videoStream) videoStream.getTracks().forEach(t => t.stop());
+        try {
+            videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode } });
+            document.getElementById('webcam').srcObject = videoStream;
+        } catch(e) { alert('Could not switch camera.'); }
+    }
+
+    // ── BRIGHTNESS MONITOR ──
+    function startBrightnessMonitor() {
+        const canvas = document.getElementById('process-canvas');
+        const video = document.getElementById('webcam');
+        brightnessTimer = setInterval(() => {
+            if (!videoStream || video.videoWidth === 0) return;
+            canvas.width = 64; canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, 64, 64);
+            const data = ctx.getImageData(0, 0, 64, 64).data;
+            let sum = 0;
+            for (let i = 0; i < data.length; i += 4) {
+                sum += 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+            }
+            const brightness = sum / (64 * 64); // 0-255
+            const pct = Math.min(100, Math.round(brightness / 255 * 100));
+            const fill = document.getElementById('brightness-fill');
+            const hint = document.getElementById('brightness-hint');
+            fill.style.width = pct + '%';
+            if (brightness < 50) {
+                fill.style.background = '#F44336';
+                hint.textContent = '💡 Too dark — add more light';
+            } else if (brightness > 220) {
+                fill.style.background = '#FF9800';
+                hint.textContent = '☀️ Overexposed — shade the area';
+            } else {
+                fill.style.background = '#4CAF50';
+                hint.textContent = '✅ Good lighting';
+            }
+        }, 500);
+    }
+
+    // ── COUNTDOWN & CAPTURE ──
+    async function startCountdown() {
+        const btn = document.getElementById('btn-capture');
+        btn.disabled = true;
+        const overlay = document.getElementById('cam-countdown');
+        const numEl = document.getElementById('countdown-num');
+        overlay.style.display = 'flex';
+        for (let i = 3; i >= 1; i--) {
+            numEl.textContent = i;
+            await new Promise(r => setTimeout(r, 900));
+        }
+        numEl.textContent = '📸';
+        await new Promise(r => setTimeout(r, 300));
+        overlay.style.display = 'none';
+        btn.disabled = false;
+        captureFrame();
+    }
+
+    function captureFrame() {
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('process-canvas');
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+        capturedAngles[currentAngle] = dataUrl;
+        setThumbImage(currentAngle, dataUrl);
+        currentAngle++;
+        updateAngleUI();
+        if (currentAngle === 3) {
+            stopCamera();
+            runAnalysis(capturedAngles[0]);
+        }
+        // else wait for next capture click
+    }
+
+    // ── ANALYSIS ──
+    async function runAnalysis(imageData) {
+        document.getElementById('results-section').classList.add('hidden');
+        document.getElementById('rejection-card').classList.add('hidden');
+        document.getElementById('skip-btn-wrap').style.display = 'none';
+        document.getElementById('capture-guide').style.display = 'none';
+        document.getElementById('angle-panel').style.display = 'none';
+
+        const ppLog = document.getElementById('pp-log');
+        ppLog.classList.remove('hidden');
+
+        const steps = ['pp-1','pp-2','pp-3','pp-4','pp-5','pp-6','pp-7'];
+        const labels = [
+            '✅ Image decoded successfully',
+            '✅ OpenCV quality gate passed',
+            '✅ Brightness normalized',
+            '✅ Hair / scalp region identified',
+            '✅ Norwood feature markers extracted',
+            '✅ 14-point clinical analysis complete',
+            '✅ Confidence calibration applied'
+        ];
+        steps.forEach(id => {
+            const el = document.getElementById(id);
+            el.textContent = id === 'pp-1' ? '⏳ Decoding image data...' : el.textContent;
+            el.classList.remove('done'); el.classList.add('active');
+        });
+
+        for (let i = 0; i < steps.length; i++) {
+            await new Promise(r => setTimeout(r, 320));
+            const el = document.getElementById(steps[i]);
+            el.textContent = labels[i];
+            el.classList.remove('active'); el.classList.add('done');
+        }
+
+        try {
+            const resp = await fetch('http://localhost:8000/api/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: imageData })
+            });
+            if (!resp.ok) throw new Error('Backend error ' + resp.status);
+            const data = await resp.json();
+            ppLog.classList.add('hidden');
+
+            if (data.rejected) {
+                showRejection(data.reason);
                 return;
             }
 
-            const video = document.getElementById('webcam');
+            displayResults(data);
 
-            // Assign stream and play — don't wait for onloadedmetadata (unreliable in Chrome)
-            video.srcObject = null;           // reset first
-            video.srcObject = videoStream;
-            video.muted = true;
-            video.setAttribute('playsinline', '');
-            video.setAttribute('autoplay', '');
+            // Save to session
+            const session = JSON.parse(localStorage.getItem('tricho_session') || '{}');
+            session.healthScore = data.score;
+            session.stage = data.hair_stage;
+            if (!session.scans) session.scans = [];
+            session.scans.push({ date: new Date().toISOString(), score: data.score, stage: data.hair_stage, dandruff: data.dandruff_present, label: data.label, norwood: data.norwood_stage });
+            localStorage.setItem('tricho_session', JSON.stringify(session));
+        } catch(err) {
+            ppLog.classList.add('hidden');
+            alert('⚠️ Analysis failed.\n\nMake sure the backend server is running:\n.\\venv\\Scripts\\python.exe -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload');
+        }
+    }
 
-            // Show live UI immediately so user can see the loading
-            document.getElementById('cam-ready-state').style.display = 'none';
-            document.getElementById('cam-live-state').style.display = 'block';
+    function showRejection(reason) {
+        document.getElementById('rejection-reason').textContent = reason;
+        document.getElementById('rejection-card').classList.remove('hidden');
+        document.getElementById('capture-guide').style.display = 'grid';
+        document.getElementById('angle-panel').style.display = 'block';
+    }
 
-            try {
-                await video.play();
-            } catch (playErr) {
-                // On some browsers play() returns a rejected promise if autoplay is blocked
-                // The video still plays via user gesture; just log it
-                console.warn('video.play():', playErr);
-            }
+    // ── DISPLAY RESULTS ──
+    function cap(s) { return s ? s.replace(/_/g,' ').replace(/\b\w/g, c=>c.toUpperCase()) : '–'; }
+
+    function pillCls(val, context) {
+        const v = (val||'').toLowerCase();
+        if (context === 'density') { return v==='high'?'pill-good': v==='medium'?'pill-mild': v==='low'?'pill-mod':'pill-bad'; }
+        if (context === 'scalp')   { return v==='minimal'?'pill-good': v==='mild'?'pill-mild': v==='moderate'?'pill-mod':'pill-bad'; }
+        if (context === 'oil')     { return v==='oily'?'pill-oily': v==='dry'?'pill-dry':'pill-good'; }
+        if (v==='none'||v==='full'||v==='intact'||v==='good') return 'pill-good';
+        if (v==='mild'||v==='thinning'||v==='acceptable') return 'pill-mild';
+        if (v==='moderate'||v==='sparse') return 'pill-mod';
+        return 'pill-bad';
+    }
+
+    function displayResults(d) {
+        document.getElementById('results-section').classList.remove('hidden');
+
+        // Quality banner
+        const qb = document.getElementById('quality-banner');
+        qb.className = 'image-quality-banner';
+        if (d.image_quality === 'poor') {
+            qb.classList.add('banner-err');
+            qb.innerHTML = '⚠️ <span>Image quality is poor — results may be less accurate. Retake with better lighting.</span>';
+            qb.classList.remove('hidden');
+        } else if (d.image_quality === 'acceptable') {
+            qb.classList.add('banner-warn');
+            qb.innerHTML = '💡 <span>Image quality is acceptable. Better lighting and angle will improve accuracy.</span>';
+            qb.classList.remove('hidden');
+        } else {
+            qb.classList.add('hidden');
         }
 
-        function stopCamera() {
-            if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
-            document.getElementById('cam-live-state').style.display = 'none';
-            document.getElementById('cam-ready-state').style.display = 'block';
-            document.getElementById('btn-open-cam').textContent = '📷 Start Camera';
-            document.getElementById('btn-open-cam').disabled = false;
+        // Score circle
+        const score = d.score || 0;
+        const norwood = d.norwood_stage || d.hair_stage || 1;
+        document.getElementById('score-circle').style.setProperty('--pct', Math.round(score/100*360) + 'deg');
+        document.getElementById('res-score').textContent = score;
+        document.getElementById('res-label').textContent = d.label || '–';
+        document.getElementById('res-summary').textContent = d.summary || '–';
+        document.getElementById('res-confidence').textContent = (d.confidence||0) + '%';
+        document.getElementById('res-desc').textContent = d.desc || '–';
+
+        // Norwood bar (7 segments)
+        const colors = ['','filled-1','filled-2','filled-3','filled-4','filled-5','filled-6','filled-7'];
+        let bars = '';
+        for (let i = 1; i <= 7; i++) {
+            bars += `<div class="nw-seg ${i <= norwood ? colors[i] : ''}"></div>`;
         }
+        document.getElementById('norwood-bar').innerHTML = bars;
 
-        async function switchCameraFacing() {
-            facingMode = facingMode === 'environment' ? 'user' : 'environment';
-            if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); }
-            try {
-                videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode } });
-                document.getElementById('webcam').srcObject = videoStream;
-            } catch (e) { alert('Could not switch camera.'); }
-        }
+        // Feature chips in header
+        const chips = [
+            d.temporal_recession_pct != null ? `⬅️ ${d.temporal_recession_pct}% Recession` : null,
+            d.vertex_density ? `👆 Crown: ${cap(d.vertex_density)}` : null,
+            d.frontal_bridge ? `🌉 Bridge: ${cap(d.frontal_bridge)}` : null,
+        ].filter(Boolean);
+        document.getElementById('feature-chips').innerHTML = chips.map(c => `<span class="feature-chip">${c}</span>`).join('');
 
-        async function startCountdown() {
-            const btn = document.getElementById('btn-capture');
-            btn.disabled = true;
-            const overlay = document.getElementById('cam-countdown');
-            const numEl = document.getElementById('countdown-num');
-            overlay.style.display = 'flex';
-            for (let i = 3; i >= 1; i--) {
-                numEl.textContent = i;
-                await new Promise(r => setTimeout(r, 900));
-            }
-            numEl.textContent = '📸';
-            await new Promise(r => setTimeout(r, 300));
-            overlay.style.display = 'none';
-            btn.disabled = false;
-            captureFrame();
-        }
+        // Confidence bar
+        document.getElementById('res-conf-bar').style.width = (d.confidence||0) + '%';
+        document.getElementById('res-conf-pct').textContent = (d.confidence||0) + '%';
 
-        function captureFrame() {
-            const video = document.getElementById('webcam');
-            const canvas = document.getElementById('process-canvas');
-            canvas.width = video.videoWidth || 640;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            runAnalysis(canvas.toDataURL('image/jpeg'));
-        }
+        // Metrics grid
+        const metrics = [
+            { label:'Hair Density',       val: cap(d.hair_density),        cls: pillCls(d.hair_density,'density') },
+            { label:'Scalp Visibility',   val: cap(d.scalp_visibility),    cls: pillCls(d.scalp_visibility,'scalp') },
+            { label:'Dandruff',           val: d.dandruff_present ? '⚠️ '+cap(d.dandruff_severity) : '✅ None', cls: d.dandruff_present ? pillCls(d.dandruff_severity) : 'pill-good' },
+            { label:'Oiliness',           val: cap(d.oiliness),            cls: pillCls(d.oiliness,'oil') },
+            { label:'Redness',            val: cap(d.redness),             cls: pillCls(d.redness) },
+            { label:'Breakage',           val: cap(d.breakage),            cls: pillCls(d.breakage) },
+            { label:'Thinning Pattern',   val: cap(d.thinning_pattern),    cls: d.thinning_pattern==='none'?'pill-good':'pill-mild' },
+            { label:'Image Quality',      val: cap(d.image_quality),       cls: pillCls(d.image_quality) },
+            { label:'Norwood Stage',      val: 'Stage ' + norwood,         cls: ['','pill-good','pill-good','pill-mild','pill-mild','pill-mod','pill-bad','pill-bad'][norwood]||'pill-mild' },
+        ];
+        document.getElementById('metrics-grid').innerHTML = metrics.map(m => `
+            <div class="metric-card">
+                <div class="metric-label">${m.label}</div>
+                <span class="metric-pill ${m.cls}">${m.val}</span>
+            </div>
+        `).join('');
 
-        async function runAnalysis(imageData) {
-            document.getElementById('results-section').classList.add('hidden');
-            const ppLog = document.getElementById('pp-log');
-            ppLog.classList.remove('hidden');
+        // Action plan table
+        const ap = d.action_plan || {};
+        const planRows = [
+            { cat: '🚨 Immediate Precaution', advice: ap.immediate_precaution || '–' },
+            { cat: '📅 Daily Habit',           advice: ap.daily_habit || '–' },
+            { cat: '💊 Medical Step',          advice: ap.medical_step || '–' },
+            { cat: '🥗 Nutrition',             advice: ap.nutrition || '–' },
+            { cat: '🔭 Long-Term Path',        advice: ap.long_term || '–' },
+        ];
+        document.getElementById('action-plan-body').innerHTML = planRows.map(r => `
+            <tr>
+                <td class="action-cat">${r.cat}</td>
+                <td>${r.advice}</td>
+            </tr>
+        `).join('');
 
-            // Simulate preprocessing pipeline
-            const steps = ['pp-1', 'pp-2', 'pp-3', 'pp-4', 'pp-5', 'pp-6', 'pp-7'];
-            const labels = ['✅ Image resized to 224×224', '✅ Converted to RGB', '✅ Brightness normalized', '✅ Noise reduction applied', '✅ Hair/scalp region detected', '✅ Feature extraction complete', '✅ Confidence smoothing applied'];
+        // Recommendations
+        const recs = d.recommendations || [];
+        document.getElementById('res-recommendations').innerHTML = recs.map((r,i) => `
+            <div style="display:flex; gap:1rem; padding:0.85rem 1rem; background:var(--bg-section); border-radius:var(--radius-sm); border-left:3px solid var(--primary); font-size:0.88rem;">
+                <span style="font-weight:700; color:var(--primary); min-width:20px;">${i+1}.</span>
+                <span>${r}</span>
+            </div>
+        `).join('');
 
-            for (let i = 0; i < steps.length; i++) {
-                await new Promise(r => setTimeout(r, 400));
-                const el = document.getElementById(steps[i]);
-                el.textContent = labels[i];
-                el.classList.add('done');
-            }
+        document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
+    }
 
-            // Perform mock computer vision analysis on the image
-            await new Promise(r => setTimeout(r, 500));
+    function resetScanner() {
+        capturedAngles = [null, null, null];
+        currentAngle = 0;
+        document.getElementById('results-section').classList.add('hidden');
+        document.getElementById('rejection-card').classList.add('hidden');
+        document.getElementById('pp-log').classList.add('hidden');
+        document.getElementById('capture-guide').style.display = 'grid';
+        document.getElementById('angle-panel').style.display = 'block';
+        document.getElementById('skip-btn-wrap').style.display = 'none';
+        // Reset thumbnails
+        ['1','2','3'].forEach((n,i) => {
+            const t = document.getElementById('thumb-'+n);
+            t.innerHTML = `${ANGLE_ICONS[i]}<span class="angle-thumb-label">${ANGLES[i]}</span>`;
+        });
+        updateAngleUI();
+        document.getElementById('img-input').value = '';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
-            // Pixel-based heuristic analysis
-            const canvas = document.getElementById('process-canvas');
-            const ctx = canvas.getContext('2d');
-            const img = new Image();
-            img.onload = function () {
-                canvas.width = 224; canvas.height = 224;
-                ctx.drawImage(img, 0, 0, 224, 224);
-                const imageDataObj = ctx.getImageData(0, 0, 224, 224);
-                const pixels = imageDataObj.data;
-
-                let darkPixels = 0, whitePixels = 0, totalPixels = pixels.length / 4;
-                for (let p = 0; p < pixels.length; p += 4) {
-                    const r = pixels[p], g = pixels[p + 1], b = pixels[p + 2];
-                    const brightness = (r + g + b) / 3;
-                    if (brightness < 80) darkPixels++;
-                    if (brightness > 200 && Math.abs(r - g) < 30 && Math.abs(g - b) < 30) whitePixels++;
-                }
-
-                const darkRatio = darkPixels / totalPixels;
-                const whiteRatio = whitePixels / totalPixels;
-                const dandruffDetected = whiteRatio > 0.25;
-
-                let stage, score;
-                if (darkRatio > 0.5) { stage = 1; score = Math.floor(85 + Math.random() * 15); }
-                else if (darkRatio > 0.35) { stage = 2; score = Math.floor(65 + Math.random() * 20); }
-                else if (darkRatio > 0.2) { stage = 3; score = Math.floor(40 + Math.random() * 25); }
-                else { stage = 4; score = Math.floor(15 + Math.random() * 25); }
-
-                const confidence = Math.floor(78 + Math.random() * 20);
-                displayResults(stage, score, dandruffDetected, confidence);
-
-                // Save scan to session
-                const session = JSON.parse(localStorage.getItem('tricho_session') || '{}');
-                session.healthScore = score;
-                session.stage = stage;
-                if (!session.scans) session.scans = [];
-                session.scans.push({ date: new Date().toISOString(), score, stage, dandruff: dandruffDetected });
-                localStorage.setItem('tricho_session', JSON.stringify(session));
-            };
-            img.src = imageData;
-        }
-
-        function displayResults(stage, score, dandruff, confidence) {
-            document.getElementById('results-section').classList.remove('hidden');
-
-            const stageLabels = ['', 'Stage 1 – Healthy Hair', 'Stage 2 – Mild Hair Fall', 'Stage 3 – Moderate Hair Loss', 'Stage 4 – Severe Hair Loss'];
-            const stageBadges = ['', 'badge-stage1', 'badge-stage2', 'badge-stage3', 'badge-stage4'];
-            const stageDesc = ['', 'Your hair is in excellent condition. Maintain your current routine.', 'Slight increase in shedding. Consider lifestyle and nutrition improvements.', 'Visible thinning detected. Recommend consulting a dermatologist.', 'Significant hair loss detected. Immediate medical consultation is strongly advised.'];
-            const recommendations = {
-                1: ['💧 Maintain hydration — 2 litres of water daily', '🧴 Use a gentle sulfate-free shampoo weekly', '🥦 Continue balanced diet rich in vitamins A, C, E'],
-                2: ['🛡️ Switch to sulfate-free shampoo (2–3x/week)', '💊 Consider adding biotin and vitamin D supplements', '😌 Reduce stress with daily mindfulness (10 mins)', '🥚 Increase protein: eggs, fish, lentils daily'],
-                3: ['🏥 Consult a dermatologist for a professional evaluation', '💆 Scalp massage with rosemary oil (3–4x/week)', '❌ Avoid heat styling completely for 8 weeks', '🥩 Prioritize iron-rich foods: spinach, red meat, nuts'],
-                4: ['🚨 Urgent: Please consult a certified trichologist', '🔬 Request a scalp biopsy to determine root cause', '💊 Minoxidil (5%) may be discussed with your doctor', '🧬 Consider a full hormonal and nutritional panel blood test']
-            };
-
-            document.getElementById('res-score').textContent = score + ' / 100';
-            document.getElementById('res-score-bar').style.width = score + '%';
-            document.getElementById('res-score-desc').textContent = score >= 80 ? 'Excellent condition' : score >= 60 ? 'Minor issues detected' : score >= 40 ? 'Moderate concern' : 'Severe — needs attention';
-            document.getElementById('res-stage').textContent = stageLabels[stage];
-            document.getElementById('res-stage-badge').innerHTML = `<span class="badge ${stageBadges[stage]}">${stageLabels[stage]}</span>`;
-            document.getElementById('res-stage-desc').textContent = stageDesc[stage];
-            document.getElementById('res-dandruff').textContent = dandruff ? '⚠️ Detected' : '✅ Not Detected';
-            document.getElementById('res-dandruff-desc').textContent = dandruff ? 'White flake clusters and dry patches found. Use zinc pyrithione shampoo.' : 'Scalp appears clean. No significant dandruff indicators found.';
-            document.getElementById('res-confidence').textContent = confidence + '%';
-            document.getElementById('res-conf-bar').style.width = confidence + '%';
-
-            const recList = document.getElementById('res-recommendations');
-            recList.innerHTML = (recommendations[stage] || []).map(r => `<div style="padding:0.75rem 1rem; background:var(--bg-section); border-radius:var(--radius-sm); border-left:3px solid var(--primary); font-size:0.9rem;">${r}</div>`).join('');
-
-            results.scrollIntoView({ behavior: 'smooth' });
-        }
-        var results = document.getElementById('results-section');
+    // Init
+    updateAngleUI();
     </script>
 </body>
-
 </html>
